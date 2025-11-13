@@ -409,7 +409,7 @@
         }
 
         .time-header-fixed {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             border-bottom: 2px solid var(--calendar-header-border);
@@ -1478,9 +1478,7 @@
                 overflow-x: hidden; /* Ensure the old calendar-grid is hidden */
             }
 
-            .time-header-fixed {
-                height: 87px; /* Height for mobile view */
-            }
+          
 
             .time-header, .time-column {
                 /* These are now inside fixed containers, so remove absolute positioning */
@@ -1565,8 +1563,4 @@
 
         
 
-        @media (min-width: 768px) and (max-width: 1200px) {
-            .time-header-fixed {
-                height: 81px;
-            }
-        }
+       
