@@ -87,9 +87,9 @@ let dummyAppointments = [
 // API Functions
 const API = {
     // Get doctor information
-    getDoctor: function() {
+    getDoctor: function () {
         console.log('getDoctor called');
-        
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 const doctorData = {
@@ -99,7 +99,7 @@ const API = {
                     "email": "dr.joe@hospital.com",
                     "phone": "+1234567890"
                 };
-                
+
                 console.log('Doctor data returned:', doctorData);
                 resolve(doctorData);
             }, 300);
@@ -107,16 +107,16 @@ const API = {
     },
 
     // Initialize with doctor data
-    setDoctor: function(doctorData) {
+    setDoctor: function (doctorData) {
         console.log('setDoctor called with:', doctorData);
         // In real app, this would initialize the doctor context
         return Promise.resolve({ success: true });
     },
 
     // Select date range and get appointments
-    selectDate: function(from, to) {
+    selectDate: function (from, to) {
         console.log('selectDate called with:', { from, to });
-        
+
         // Simulate API delay
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -124,7 +124,7 @@ const API = {
                 const filteredAppointments = dummyAppointments.filter(apt => {
                     return apt.from >= from && apt.from < to;
                 });
-                
+
                 console.log('Appointments returned:', filteredAppointments);
                 resolve(filteredAppointments);
             }, 300);
@@ -132,12 +132,12 @@ const API = {
     },
 
     // Search patients
-    queryPatient: function(query) {
+    queryPatient: function (query) {
         console.log('queryPatient called with:', query);
-        
+
         return new Promise((resolve) => {
             setTimeout(() => {
-                const filteredPatients = dummyPatients.filter(patient => 
+                const filteredPatients = dummyPatients.filter(patient =>
                     patient.name.toLowerCase().includes(query.toLowerCase()) ||
                     patient.email.toLowerCase().includes(query.toLowerCase())
                 );
@@ -148,9 +148,9 @@ const API = {
     },
 
     // Save appointment
-    saveAppointment: function(appointmentData) {
+    saveAppointment: function (appointmentData) {
         console.log('saveAppointment called with:', appointmentData);
-        
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 const newAppointment = {
@@ -158,12 +158,12 @@ const API = {
                     id: Date.now().toString(),
                     type: appointmentData.patient_id ? "Patient" : "Other"
                 };
-                
+
                 dummyAppointments.push(newAppointment);
-                
+
                 console.log('Appointment saved:', newAppointment);
-                resolve({ 
-                    code: 200, 
+                resolve({
+                    code: 200,
                     message: "OK",
                     appointment_id: newAppointment.id
                 });
@@ -172,9 +172,9 @@ const API = {
     },
 
     // Delete appointment
-    deleteAppointment: function(appointmentId) {
+    deleteAppointment: function (appointmentId) {
         console.log('deleteAppointment called with:', appointmentId);
-        
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 const index = dummyAppointments.findIndex(apt => apt.id === appointmentId);
@@ -191,9 +191,9 @@ const API = {
     },
 
     // Edit appointment
-    editAppointment: function(appointmentData) {
+    editAppointment: function (appointmentData) {
         console.log('editAppointment called with:', appointmentData);
-        
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 const index = dummyAppointments.findIndex(apt => apt.id === appointmentData.appointment_id);
@@ -207,7 +207,7 @@ const API = {
                         patient_id: appointmentData.patient_id,
                         type: appointmentData.patient_id ? "Patient" : "Other"
                     };
-                    
+
                     console.log('Appointment updated:', dummyAppointments[index]);
                     resolve({ code: 200, message: "OK" });
                 } else {
@@ -216,5 +216,19 @@ const API = {
                 }
             }, 400);
         });
+    },
+
+    // Set theme (dark or light)
+    setTheme: function (theme) {
+        console.log('setTheme called with:', theme);
+        if (typeof window !== 'undefined' && window.setTheme) {
+            window.setTheme(theme);
+        }
+        return Promise.resolve({ success: true });
+    },
+
+    refreshAppointments: function () {
+        console.log('refreshAppointments called');
+        // Implementation handled by frontend
     }
 };

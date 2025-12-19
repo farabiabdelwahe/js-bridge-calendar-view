@@ -8,9 +8,9 @@ const pendingRequests = new Map();
 function callNativeAPI(method, params = {}) {
     return new Promise((resolve, reject) => {
         const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        
+
         pendingRequests.set(requestId, { resolve, reject });
-        
+
         // Swift path
         if (window.webkit?.messageHandlers?.nativeBridge) {
             window.webkit.messageHandlers.nativeBridge.postMessage({
@@ -32,20 +32,20 @@ function callNativeAPI(method, params = {}) {
 }
 
 // Handle responses from Swift (must be global)
-window.onNativeResponse = function(response) {
+window.onNativeResponse = function (response) {
     try {
         // Parse string response
         const data = typeof response === 'string' ? JSON.parse(response) : response;
         const { requestId, success, result, error } = data;
-        
+
         const pending = pendingRequests.get(requestId);
         if (!pending) {
             console.warn('No pending request for ID:', requestId);
             return;
         }
-        
+
         pendingRequests.delete(requestId);
-        
+
         if (success) {
             pending.resolve(JSON.parse(result || '{}'));
         } else {
@@ -68,8 +68,8 @@ window.onNativeResponse = function(response) {
 const selectDateCache = new Map();
 
 const API = {
-    
-    setDoctor: function(doctorData) {
+
+    setDoctor: function (doctorData) {
         currentDoctor = doctorData;
         console.log('✅ Doctor data received:', doctorData);
         // Update header immediately if DOM is ready
@@ -99,11 +99,18 @@ const API = {
 
         return promise;
     },
-    
+
     saveAppointment: (data) => callNativeAPI('saveAppointment', data),
-    
+
     editAppointment: (data) => callNativeAPI('editAppointment', data),
-    
+
     deleteAppointment: (appointmentId) => callNativeAPI('deleteAppointment', { appointmentId }),
-    
+
+    setTheme: function (theme) {
+        console.log('setTheme called with:', theme);
+        if (window.setTheme) {
+            window.setTheme(theme);
+        }
+        return true; // CRITICAL: Return value for WebKit
+    }
 };

@@ -3,14 +3,14 @@
 
 const API = {
     // Get doctor information
-    getDoctor: function() {
+    getDoctor: function () {
         console.log('getDoctor called');
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "getDoctor",
                 JSON.stringify({}),
-                function(result) {
+                function (result) {
                     try {
                         const doctorData = JSON.parse(result);
                         console.log('Doctor data returned:', doctorData);
@@ -25,14 +25,14 @@ const API = {
     },
 
     // Initialize with doctor data
-    setDoctor: function(doctorData) {
+    setDoctor: function (doctorData) {
         console.log('setDoctor called with:', doctorData);
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "setDoctor",
                 JSON.stringify(doctorData),
-                function(result) {
+                function (result) {
                     try {
                         const response = JSON.parse(result);
                         resolve(response);
@@ -46,14 +46,14 @@ const API = {
     },
 
     // Select date range and get appointments
-    selectDate: function(from, to) {
+    selectDate: function (from, to) {
         console.log('selectDate called with:', { from, to });
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "selectDate",
                 JSON.stringify({ from: from, to: to }),
-                function(result) {
+                function (result) {
                     try {
                         const appointments = JSON.parse(result);
                         console.log('Appointments returned:', appointments);
@@ -68,14 +68,14 @@ const API = {
     },
 
     // Search patients
-    queryPatient: function(query) {
+    queryPatient: function (query) {
         console.log('queryPatient called with:', query);
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "queryPatient",
                 JSON.stringify({ query: query }),
-                function(result) {
+                function (result) {
                     try {
                         const patients = JSON.parse(result);
                         console.log('Patients returned:', patients);
@@ -90,14 +90,14 @@ const API = {
     },
 
     // Save appointment
-    saveAppointment: function(appointmentData) {
+    saveAppointment: function (appointmentData) {
         console.log('saveAppointment called with:', appointmentData);
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "saveAppointment",
                 JSON.stringify(appointmentData),
-                function(result) {
+                function (result) {
                     try {
                         const response = JSON.parse(result);
                         console.log('Appointment saved:', response);
@@ -112,14 +112,14 @@ const API = {
     },
 
     // Delete appointment
-    deleteAppointment: function(appointmentId) {
+    deleteAppointment: function (appointmentId) {
         console.log('deleteAppointment called with:', appointmentId);
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "deleteAppointment",
                 JSON.stringify({ appointmentId: appointmentId }),
-                function(result) {
+                function (result) {
                     try {
                         const response = JSON.parse(result);
                         console.log('Appointment deleted:', response);
@@ -134,14 +134,14 @@ const API = {
     },
 
     // Edit appointment
-    editAppointment: function(appointmentData) {
+    editAppointment: function (appointmentData) {
         console.log('editAppointment called with:', appointmentData);
-        
+
         return new Promise((resolve, reject) => {
             window.kmpJsBridge.callNative(
                 "editAppointment",
                 JSON.stringify(appointmentData),
-                function(result) {
+                function (result) {
                     try {
                         const response = JSON.parse(result);
                         console.log('Appointment updated:', response);
@@ -153,6 +153,19 @@ const API = {
                 }
             );
         });
+    },
+
+    // Set theme (dark or light)
+    setTheme: function (theme) {
+        if (window.Android && window.Android.setTheme) {
+            window.Android.setTheme(theme);
+        } else {
+            console.log('Android.setTheme not found');
+        }
+    },
+
+    refreshAppointments: function () {
+        console.log('refreshAppointments called');
+        // Implementation handled by frontend
     }
 };
-

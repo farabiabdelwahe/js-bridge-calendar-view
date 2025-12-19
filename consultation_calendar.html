@@ -17,33 +17,22 @@
 
 <body>
     <div class="header">
-        <h1 id="headerTitle">📅 Consultation Calendar</h1>
-        <div class="theme-switch-wrapper">
-            <label class="theme-switch" for="checkbox">
-                <input type="checkbox" id="checkbox" />
-                <div class="slider round"></div>
-            </label>
+        <div class="header-row header-top">
+            <h1 id="headerTitle">📅 Consultation Calendar</h1>
+            <div class="view-toggle">
+                <button class="view-button" id="monthViewBtn">Month</button>
+                <button class="view-button active" id="weekViewBtn">Week</button>
+                <button class="view-button" id="dayViewBtn">Day</button>
+            </div>
         </div>
 
-        <!-- Modern Calendar Control Panel -->
-        <div class="calendar-control-panel">
-            <div class="control-group">
-                <div class="view-toggle">
-                    <button class="view-button" id="monthViewBtn">Month</button>
-                    <button class="view-button active" id="weekViewBtn">Week</button>
-                    <button class="view-button" id="dayViewBtn">Day</button>
-                </div>
+        <div class="header-row header-bottom">
+            <div class="navigation-controls">
+                <button class="nav-button arrow" id="prevBtn">←</button>
+                <button class="nav-button today" id="todayBtn">Today</button>
+                <button class="nav-button arrow" id="nextBtn">→</button>
+                <button class="nav-button jump" id="jumpToWeekBtn">Jump to Date</button>
             </div>
-
-            <div class="control-group">
-                <div class="navigation-controls">
-                    <button class="nav-button arrow" id="prevBtn">←</button>
-                    <button class="nav-button today" id="todayBtn">Today</button>
-                    <button class="nav-button arrow" id="nextBtn">→</button>
-                    <button class="nav-button jump" id="jumpToWeekBtn">Jump to Date</button>
-                </div>
-            </div>
-
             <div class="date-range" id="dateRange"></div>
         </div>
     </div>
@@ -216,13 +205,13 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             setTimeout(async () => {
-               await initializeApp();
-                               document.querySelector('.time-column').style.paddingTop = document.querySelector('.day-header').offsetHeight +1+ 'px';
-
+                await initializeApp();
             }, 1000);
 
+            window.addEventListener('resize', syncHeaderHeights);
 
- 
+
+
 
 
         });
@@ -244,6 +233,11 @@
 
             // Load initial appointments
             await loadAppointments();
+
+            // Setup current time indicator
+            updateCurrentTimeIndicator();
+            scrollToCurrentTime(true);
+            setInterval(updateCurrentTimeIndicator, 60000);
         }
 
         async function loadDoctorInfo() {
@@ -261,9 +255,9 @@
         function updateHeaderTitle() {
             const headerTitle = document.getElementById('headerTitle');
             if (currentDoctor && currentDoctor.name) {
-                headerTitle.textContent = `📅 ${currentDoctor.name}'s Consultation Calendar`;
+                headerTitle.textContent = `${currentDoctor.name}'s Calendar`;
             } else {
-                headerTitle.textContent = '📅 Consultation Calendar';
+                headerTitle.textContent = 'Consultation Calendar';
             }
         }
 
@@ -550,6 +544,7 @@
             renderCalendar();
             updateDateRange();
             loadDayViewEvents();
+            scrollToCurrentTime(true);
         }
 
         function switchToMonthView() {
@@ -597,6 +592,7 @@
 
             adjustViewHeight();
             loadAppointments();
+            scrollToCurrentTime(true);
         }
 
         function updateNavigationButtons() {
@@ -710,7 +706,9 @@
 
             calendarBody.appendChild(daysColumn);
 
+            updateCurrentTimeIndicator();
             renderFixedTimeBody();
+            requestAnimationFrame(syncHeaderHeights);
         }
 
         function renderFixedTimeBody() {
@@ -728,6 +726,24 @@
             });
 
             timeBodyFixed.appendChild(timeColumn);
+        }
+
+        function syncHeaderHeights() {
+            const calendarHeader = document.getElementById('calendarHeader');
+            const timeHeaderFixed = document.getElementById('timeHeaderFixed');
+
+            if (calendarHeader && timeHeaderFixed) {
+                // Reset height to let content dictate size
+                timeHeaderFixed.style.height = 'auto';
+                timeHeaderFixed.style.minHeight = '0';
+
+                // Get the computed height of the calendar header
+                const headerHeight = calendarHeader.offsetHeight;
+
+                // Apply to time header ensure perfect match
+                timeHeaderFixed.style.height = `${headerHeight}px`;
+                timeHeaderFixed.style.minHeight = `${headerHeight}px`;
+            }
         }
 
         function renderEvents() {
@@ -878,6 +894,8 @@
 
                     dayColumn.appendChild(cell);
                 });
+
+                updateCurrentTimeIndicator();
             }
 
             // Load and render events for the current day
@@ -1655,34 +1673,117 @@
             return `${hours}:${minutes}`;
         }
 
+        function updateCurrentTimeIndicator() {
+            // Remove existing indicators
+            document.querySelectorAll('.current-time-indicator').forEach(el => el.remove());
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+
+            // HOURS are from 7 to 20. If now is outside this range, don't show indicator.
+            if (currentHour < 7 || currentHour >= 21) return;
+
+            // Height of each hour cell is 60px.
+            const topOffset = (currentHour - 7) * 60 + (currentMinutes / 60) * 60;
+
+            if (currentView === 'week') {
+                const calendarBody = document.getElementById('calendarBody');
+                if (!calendarBody) return;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+
+                if (now >= currentWeekStart && now < weekEnd) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'current-time-indicator';
+                    indicator.style.display = 'flex';
+                    indicator.style.top = `${topOffset}px`;
+                    indicator.innerHTML = '<div class="current-time-circle"></div><div class="current-time-line"></div>';
+                    calendarBody.appendChild(indicator);
+                }
+            } else if (currentView === 'day') {
+                const dayColumn = document.getElementById('dayViewDayColumn');
+                if (!dayColumn) return;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (currentDayView.toDateString() === today.toDateString()) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'current-time-indicator';
+                    indicator.style.display = 'flex';
+                    indicator.style.top = `${topOffset}px`;
+                    indicator.innerHTML = '<div class="current-time-circle"></div><div class="current-time-line"></div>';
+                    dayColumn.appendChild(indicator);
+                }
+            }
+        }
+
+        function scrollToCurrentTime(force = false) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+
+            if (currentHour < 7 || currentHour >= 21) return;
+
+            const topOffset = (currentHour - 7) * 60 + (currentMinutes / 60) * 60 - 150; // Scroll slightly above the line
+
+            if (currentView === 'week') {
+                const scrollable = document.getElementById('calendarGridScrollable');
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+
+                // Only scroll if forced OR if we are currently at the very top (initial view)
+                if (scrollable && (force || scrollable.scrollTop === 0) && now >= currentWeekStart && now < weekEnd) {
+                    scrollable.scrollTop = Math.max(0, topOffset);
+                }
+            } else if (currentView === 'day') {
+                const scrollable = document.querySelector('.day-view-grid');
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Only scroll if forced OR if we are currently at the very top (initial view)
+                if (scrollable && (force || scrollable.scrollTop === 0) && currentDayView.toDateString() === today.toDateString()) {
+                    scrollable.scrollTop = Math.max(0, topOffset);
+                }
+            }
+        }
+
         function formatShortTime(hour) {
             const period = hour >= 12 ? 'p' : 'a';
             const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
             return `${displayHour}${period}`;
         }
 
-        const themeSwitch = document.getElementById('checkbox');
-        const html = document.documentElement;
-
-        function toggleTheme() {
-            if (themeSwitch.checked) {
+        window.setTheme = function (theme) {
+            const html = document.documentElement;
+            if (theme === 'dark') {
                 html.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
             } else {
                 html.setAttribute('data-theme', 'light');
                 localStorage.setItem('theme', 'light');
             }
-        }
-
-        themeSwitch.addEventListener('change', toggleTheme);
+        };
 
         // Check for saved theme preference
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
-            html.setAttribute('data-theme', savedTheme);
-            if (savedTheme === 'dark') {
-                themeSwitch.checked = true;
-            }
+            window.setTheme(savedTheme);
+        }
+
+        // Expose refreshAppointments to global scope and API
+        window.refreshAppointments = function () {
+            console.log('Executing refreshAppointments from frontend');
+            loadAppointments();
+        };
+
+        // Override API method to call local function
+        if (typeof API !== 'undefined') {
+            API.refreshAppointments = window.refreshAppointments;
         }
     </script>
 </body>
