@@ -198,6 +198,7 @@
         let isChangingDay = false; // Flag to prevent infinite scroll loops
         let previousView = 'week'; // Track previous view for easy navigation back
         let patientChoices = null;
+        let isAutoScrolling = false; // Flag to prevent programmatic scrolls from triggering navigation
         const HOURS = Array.from({ length: 14 }, (_, i) => i + 7);
         const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -1146,11 +1147,16 @@
 
 
             dayViewGrid.addEventListener('scroll', () => {
-                if (isChangingDay) return;
+                if (isChangingDay || isAutoScrolling) return;
 
                 const currentScrollTop = dayViewGrid.scrollTop;
                 const scrollDirection = currentScrollTop > lastScrollTop ? 'down' : 'up';
                 lastScrollTop = currentScrollTop;
+
+                // Ignore scroll events during bounce effect (negative scrollTop or > scrollHeight)
+                if (currentScrollTop < 0 || currentScrollTop > (dayViewGrid.scrollHeight - dayViewGrid.clientHeight)) {
+                    return;
+                }
 
                 clearTimeout(scrollTimeout);
 
@@ -1291,18 +1297,28 @@
             let isSyncingScroll = false;
 
             calendarGridScrollable.addEventListener('scroll', () => {
-                if (!isSyncingScroll) {
+                if (isSyncingScroll || isAutoScrolling) return;
+
+                // Ignore bounce
+                if (calendarGridScrollable.scrollTop < 0) return;
+
+                if (Math.abs(timeBodyFixed.scrollTop - calendarGridScrollable.scrollTop) > 1) {
                     isSyncingScroll = true;
                     timeBodyFixed.scrollTop = calendarGridScrollable.scrollTop;
-                    isSyncingScroll = false;
+                    setTimeout(() => isSyncingScroll = false, 50);
                 }
             });
 
             timeBodyFixed.addEventListener('scroll', () => {
-                if (!isSyncingScroll) {
+                if (isSyncingScroll || isAutoScrolling) return;
+
+                // Ignore bounce
+                if (timeBodyFixed.scrollTop < 0) return;
+
+                if (Math.abs(calendarGridScrollable.scrollTop - timeBodyFixed.scrollTop) > 1) {
                     isSyncingScroll = true;
                     calendarGridScrollable.scrollTop = timeBodyFixed.scrollTop;
-                    isSyncingScroll = false;
+                    setTimeout(() => isSyncingScroll = false, 50);
                 }
             });
 
@@ -1747,7 +1763,12 @@
 
                 // Only scroll if forced OR if we are currently at the very top (initial view)
                 if (scrollable && (force || scrollable.scrollTop === 0) && currentDayView.toDateString() === today.toDateString()) {
+                    isAutoScrolling = true;
                     scrollable.scrollTop = Math.max(0, topOffset);
+                    setTimeout(() => {
+                        isAutoScrolling = false;
+                        lastScrollTop = scrollable.scrollTop; // Update lastScrollTop to prevent false direction detection
+                    }, 500);
                 }
             }
         }
