@@ -81,6 +81,12 @@ Deletes an appointment.
     *   `appointmentId`: string
 *   **Returns**: `Promise<{code: number, message: string}>`
 
+### `goToDetail(appointmentId)`
+Navigates to the native detail view for the specified appointment.
+*   **Parameters**:
+    *   `appointmentId`: string
+*   **Returns**: `Promise<{success: boolean}>`
+
 ### `setTheme(theme)`
 Sets the application theme.
 *   **Parameters**:

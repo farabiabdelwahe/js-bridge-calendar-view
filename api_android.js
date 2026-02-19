@@ -155,6 +155,28 @@ const API = {
         });
     },
 
+    // Go to appointment detail page
+    goToDetail: function (appointmentId) {
+        console.log('goToDetail called with appointment ID:', appointmentId);
+
+        return new Promise((resolve, reject) => {
+            window.kmpJsBridge.callNative(
+                "goToDetail",
+                JSON.stringify({ appointmentId: appointmentId }),
+                function (result) {
+                    try {
+                        const response = JSON.parse(result);
+                        console.log('goToDetail response:', response);
+                        resolve(response);
+                    } catch (error) {
+                        console.error('Error in goToDetail:', error);
+                        reject(error);
+                    }
+                }
+            );
+        });
+    },
+
     // Set theme (dark or light)
     setTheme: function (theme) {
         if (window.Android && window.Android.setTheme) {

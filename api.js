@@ -218,6 +218,12 @@ const API = {
         });
     },
 
+    // Go to appointment detail page
+    goToDetail: function (appointmentId) {
+        console.log('goToDetail called with appointment ID:', appointmentId);
+        return Promise.resolve({ success: true });
+    },
+
     // Set theme (dark or light)
     setTheme: function (theme) {
         console.log('setTheme called with:', theme);

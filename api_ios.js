@@ -106,6 +106,8 @@ const API = {
 
     deleteAppointment: (appointmentId) => callNativeAPI('deleteAppointment', { appointmentId }),
 
+    goToDetail: (appointmentId) => callNativeAPI('goToDetail', { appointmentId }),
+
     setTheme: function (theme) {
         console.log('setTheme called with:', theme);
         if (window.setTheme) {
